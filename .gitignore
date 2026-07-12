@@ -16,14 +16,21 @@ env/
 .coverage
 htmlcov/
 
-# Data and generated artifacts (fetched or produced locally, never committed)
+# Data and generated artifacts. The full dataset stays ignored, but the small
+# committed sample, the pretrained victim, and the generated figures/metrics are
+# tracked so the quickstart sweep runs offline.
 data/*
 !data/README.md
-results/
+!data/sample_mnist.npz
+results/*
+!results/robustness_curve.png
+!results/adversarial_examples.png
+!results/metrics.json
 *.pt
 *.pth
 *.pth.tar
 *.ckpt
+!models/victim_mnist.pt
 
 # OS
 .DS_Store
