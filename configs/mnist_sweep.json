@@ -1,0 +1,11 @@
+{
+  "dataset": "mnist",
+  "victim_path": "models/victim_mnist.pt",
+  "sample_path": "data/sample_mnist.npz",
+  "epsilons": [0.0, 0.05, 0.1, 0.15, 0.2, 0.25, 0.3],
+  "attacks": ["fgsm", "bim", "pgd", "least_likely"],
+  "steps": 10,
+  "grid_epsilon": 0.2,
+  "seed": 0,
+  "out_dir": "results"
+}

@@ -6,9 +6,11 @@ adversarial perturbations can be bounded and clipped directly in pixel space.
 
 from __future__ import annotations
 
+from pathlib import Path
+
 import numpy as np
 import torch
-from torch.utils.data import DataLoader, Dataset, Subset
+from torch.utils.data import DataLoader, Dataset, Subset, TensorDataset
 
 DATASETS = ("mnist", "fashion")
 
@@ -77,3 +79,41 @@ def image_loaders(
     train_loader = DataLoader(train, batch_size=batch_size, shuffle=True)
     test_loader = DataLoader(test, batch_size=batch_size, shuffle=False)
     return train_loader, test_loader
+
+
+def save_sample(images: torch.Tensor, labels: torch.Tensor, path: str | Path) -> None:
+    """Save an image sample to a compact ``.npz`` file.
+
+    Pixels are stored as ``uint8`` in [0, 255] to keep the committed file small.
+
+    Args:
+        images: Float images in [0, 1] of shape ``(N, 1, 28, 28)``.
+        labels: Integer labels of shape ``(N,)``.
+        path: Destination ``.npz`` path.
+    """
+    imgs = (images.detach().cpu().clamp(0, 1) * 255).round().to(torch.uint8).numpy()
+    lbls = labels.detach().cpu().to(torch.int64).numpy()
+    path = Path(path)
+    path.parent.mkdir(parents=True, exist_ok=True)
+    np.savez_compressed(path, images=imgs, labels=lbls)
+
+
+def load_sample(path: str | Path) -> tuple[torch.Tensor, torch.Tensor]:
+    """Load a committed ``.npz`` image sample back into float tensors.
+
+    Args:
+        path: Path to a file written by :func:`save_sample`.
+
+    Returns:
+        A ``(images, labels)`` tuple with images in [0, 1] as float32.
+    """
+    data = np.load(Path(path))
+    images = torch.from_numpy(data["images"].astype(np.float32) / 255.0)
+    labels = torch.from_numpy(data["labels"].astype(np.int64))
+    return images, labels
+
+
+def sample_loader(path: str | Path, batch_size: int = 128) -> DataLoader:
+    """Build a non-shuffling loader over a committed ``.npz`` sample."""
+    images, labels = load_sample(path)
+    return DataLoader(TensorDataset(images, labels), batch_size=batch_size, shuffle=False)

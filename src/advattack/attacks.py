@@ -80,6 +80,54 @@ def bim(
     return x_adv
 
 
+def pgd(
+    model: torch.nn.Module,
+    x: torch.Tensor,
+    y: torch.Tensor,
+    epsilon: float,
+    alpha: float | None = None,
+    steps: int = 10,
+    random_start: bool = True,
+) -> torch.Tensor:
+    """Projected gradient descent (Madry et al., 2018).
+
+    The strongest first-order L-infinity attack in this suite. It differs from
+    the basic iterative method by starting from a random point drawn uniformly
+    inside the epsilon-ball, which helps escape shallow loss regions and gives a
+    tighter estimate of worst-case robustness under repeated restarts.
+
+    Args:
+        model: The victim classifier (set to eval mode by the caller).
+        x: Clean images of shape ``(batch, C, H, W)`` in [0, 1].
+        y: True labels of shape ``(batch,)``.
+        epsilon: L-infinity budget for the total perturbation.
+        alpha: Per-step size. Defaults to ``epsilon / steps * 2.5``.
+        steps: Number of gradient steps.
+        random_start: If True, initialize inside the epsilon-ball at random.
+
+    Returns:
+        Adversarial images clipped to [0, 1] and to the epsilon-ball.
+    """
+    if epsilon == 0:
+        return x.detach().clone()
+    if alpha is None:
+        alpha = epsilon / steps * 2.5
+    x_orig = x.detach()
+    if random_start:
+        noise = torch.empty_like(x_orig).uniform_(-epsilon, epsilon)
+        x_adv = (x_orig + noise).clamp(0.0, 1.0)
+    else:
+        x_adv = x_orig.clone()
+    for _ in range(steps):
+        x_adv = x_adv.clone().detach().requires_grad_(True)
+        loss = F.cross_entropy(model(x_adv), y)
+        grad = torch.autograd.grad(loss, x_adv)[0]
+        x_adv = x_adv.detach() + alpha * grad.sign()
+        delta = (x_adv - x_orig).clamp(-epsilon, epsilon)
+        x_adv = (x_orig + delta).clamp(0.0, 1.0)
+    return x_adv
+
+
 def iterative_least_likely(
     model: torch.nn.Module,
     x: torch.Tensor,

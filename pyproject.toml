@@ -10,7 +10,7 @@ readme = "README.md"
 requires-python = ">=3.11"
 license = { text = "MIT" }
 authors = [{ name = "Aamir Malik" }]
-keywords = ["pytorch", "adversarial-examples", "fgsm", "robustness", "security"]
+keywords = ["pytorch", "adversarial-examples", "fgsm", "pgd", "robustness", "security"]
 dependencies = [
     "torch>=2.0",
     "torchvision>=0.15",
@@ -20,6 +20,9 @@ dependencies = [
 
 [project.optional-dependencies]
 dev = ["pytest>=7.4", "ruff>=0.1", "black>=23.0"]
+
+[project.scripts]
+advattack-sweep = "advattack.runner:main"
 
 [project.urls]
 Repository = "https://github.com/aamirmalik-dr/adversarial-attacks"
