@@ -1,7 +1,5 @@
 # adversarial-attacks
 
-*Origin: Originally developed for the Machine Learning for Knowledge Service course at KAIST (Spring 2019); refactored and open-sourced in July 2026.*
-
 A short empirical study of one question, with clean-room PyTorch implementations of four L-infinity attacks and a config-driven sweep that reproduces every number offline.
 
 ## Question
@@ -96,3 +94,7 @@ Aamir Malik
 ## License
 
 MIT, see LICENSE.
+
+---
+
+*Refactored and engineered into this tested, reproducible project in July 2026, from work originally done for the Machine Learning for Knowledge Service course at KAIST (Spring 2019).*
